@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useState, useEffect } from 'react';
 import {
   Container,
@@ -17,7 +18,16 @@ import { removeBookId } from '../utils/localStorage';
 const SavedBooks = () => {
   const { loading, data } = useQuery(GET_ME);
   const [removeBook] = useMutation(REMOVE_BOOK);
-  let userData = data?.me || {};
+  const [userData, setUserData] = useState({ savedBooks: [] });
+
+  useEffect(() => {
+    if (data) {
+      setUserData(data.me);
+      // save the book ids to local storage
+      const savedBookIds = data.me.savedBooks.map((book) => book.bookId);
+      localStorage.setItem('saved_books', JSON.stringify(savedBookIds));
+    }
+  }, [data, setUserData]);
 
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
@@ -28,14 +38,23 @@ const SavedBooks = () => {
     }
 
     try {
-      const { user } = await removeBook({
+      const { data } = await removeBook({
         variables: { bookId }
       });
-
-      userData = user;
+      // userData = user;
+      const updatedUser = data.removeBook;
+      setUserData(prevUserData => {
+        const updatedSavedBooks = prevUserData.savedBooks.filter(book => book.bookId !== bookId);
+        const updatedUserData = {
+          ...prevUserData,
+          savedBooks: updatedSavedBooks
+        };
+        return updatedUserData
+      });
 
       // upon success, remove book's id from localStorage
       removeBookId(bookId);
+      console.log(book);
     } catch (err) {
       console.error(err);
     }
@@ -48,7 +67,7 @@ const SavedBooks = () => {
 
   return (
     <>
-      <div fluid className="text-light bg-dark p-5">
+      <div fluid="true" className="text-light bg-dark p-5">
         <Container>
           <h1>Viewing saved books!</h1>
         </Container>
@@ -62,7 +81,7 @@ const SavedBooks = () => {
         <Row>
           {userData.savedBooks.map((book) => {
             return (
-              <Col md="4">
+              <Col md="4" key={book.bookId}>
                 <Card key={book.bookId} border='dark'>
                   {book.image ? <Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' /> : null}
                   <Card.Body>
