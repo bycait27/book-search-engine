@@ -53,11 +53,12 @@ const resolvers = {
                     { new: true }
                 );
 
-                await User.findOneAndUpdate(
-                    { _id: context.user._id },
-                    { $pull: { savedBooks: book._id } },
-                    { new: true }
-                );
+                // buggy code (could cause issues when user tries to remove book)
+                // await User.findOneAndUpdate(
+                //     { _id: context.user._id },
+                //     { $pull: { savedBooks: book._id } },
+                //     { new: true }
+                // );
 
                 return updatedUser;
             }
