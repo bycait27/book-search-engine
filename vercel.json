@@ -1,0 +1,46 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "server/server.js",
+        "use": "@vercel/node"
+      },
+      {
+        "src": "client/package.json",
+        "use": "@vercel/static-build",
+        "config": {
+          "distDir": "dist"
+        }
+      }
+    ],
+    "routes": [
+      {
+        "src": "/graphql",
+        "dest": "server/server.js"
+      },
+      {
+        "src": "^/api/(.*)",
+        "dest": "server/server.js"
+      },
+      {
+        "src": "^/static/(.*)",
+        "dest": "client/dist/static/$1"
+      },
+      {
+        "src": "^/favicon.ico",
+        "dest": "client/dist/favicon.ico"
+      },
+      {
+        "src": "^/manifest.json",
+        "dest": "client/dist/manifest.json"
+      },
+      {
+        "src": "^/(.*).(js|css|png|jpg|gif|svg|ico)$",
+        "dest": "client/dist/$1.$2"
+      },
+      {
+        "src": "/(.*)",
+        "dest": "client/dist/index.html"
+      }
+    ]
+  }
