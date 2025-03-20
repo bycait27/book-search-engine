@@ -1,5 +1,7 @@
 {
     "version": 2,
+    "buildCommand": "npm run build",
+    "outputDirectory": "client/dist",
     "builds": [
       {
         "src": "server/server.js",
@@ -19,12 +21,12 @@
         "dest": "server/server.js"
       },
       {
-        "src": "^/api/(.*)",
+        "src": "/api/(.*)",
         "dest": "server/server.js"
       },
       {
-        "src": "^/static/(.*)",
-        "dest": "client/dist/static/$1"
+        "src": "^/assets/(.*)",
+        "dest": "client/dist/assets/$1"
       },
       {
         "src": "^/favicon.ico",
@@ -35,12 +37,12 @@
         "dest": "client/dist/manifest.json"
       },
       {
-        "src": "^/(.*).(js|css|png|jpg|gif|svg|ico)$",
+        "src": "^/(.*)\\.(.*)$",
         "dest": "client/dist/$1.$2"
       },
       {
         "src": "/(.*)",
-        "dest": "client/dist/index.html"
+        "dest": "server/server.js"
       }
     ]
   }

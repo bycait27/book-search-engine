@@ -3,27 +3,29 @@ const { ApolloServer } = require('@apollo/server');
 const { expressMiddleware } = require('@apollo/server/express4');
 const path = require('path');
 const { authMiddleware } = require('./utils/auth');
+const cors = require('cors'); // Add cors package
 
 const { typeDefs, resolvers } = require('./schemas');
 const db = require('./config/connection');
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  context: authMiddleware
-});
-
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// create a new instance of an Apollo server with the GraphQL schema
+// Create Apollo Server
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+
+// Function to start Apollo Server
 const startApolloServer = async () => {
   await server.start();
 
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
-
-  app.use('/graphql', expressMiddleware(server, {
+  
+  // Add CORS support
+  app.use('/graphql', cors(), expressMiddleware(server, {
     context: authMiddleware
   }));
 
@@ -35,13 +37,24 @@ const startApolloServer = async () => {
     });
   }
 
-  db.once('open', () => {
+  // Connect to the database
+  await new Promise(resolve => {
+    db.once('open', resolve);
+    db.on('error', (err) => {
+      console.error('MongoDB connection error:', err);
+    });
+  });
+
+  if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
       console.log(`API server running on port ${PORT}!`);
       console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
     });
-  });
+  }
 };
 
-// call the async function to start the server
+// Start the server
 startApolloServer();
+
+// Export the Express app for Vercel serverless function
+module.exports = app;
